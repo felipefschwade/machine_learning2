@@ -32,14 +32,20 @@ def fit_and_predict(nome, modelo, treino_X, treino_Y, teste_X, teste_Y):
 	return taxa_de_acerto
 
 resultados = {}
-#importa a bilbioteca do multiclass
+#importa a bilbioteca do multiclass OneVsRest
 from sklearn.multiclass import OneVsRestClassifier
 #importa o LinearSVC utilizado no OVR
 from sklearn.svm import LinearSVC
 modeloOVR =  OneVsRestClassifier(LinearSVC(random_state=0)) 
 resultadoOVR = fit_and_predict("OneVsRest", modeloOVR, treino_X, treino_Y, teste_X, teste_Y)
-
 resultados[resultadoOVR] = modeloOVR
+
+#importa a bilbioteca do multiclass OneVsOne
+from sklearn.multiclass import OneVsOneClassifier
+modeloOVO =  OneVsOneClassifier(LinearSVC(random_state=0)) 
+resultadoOVO = fit_and_predict("OneVsOne", modeloOVO, treino_X, treino_Y, teste_X, teste_Y)
+resultados[resultadoOVO] = modeloOVO
+
 #importa a biblioteca do modelo bayesiano
 from sklearn.naive_bayes import MultinomialNB
 modeloMultinomial = MultinomialNB()
