@@ -31,25 +31,29 @@ def fit_and_predict(nome, modelo, treino_X, treino_Y, teste_X, teste_Y):
 	print "Taxa de acerto base: %f" % taxa_de_acerto_base
 	return taxa_de_acerto
 
+resultados = {}
 #importa a bilbioteca do multiclass
 from sklearn.multiclass import OneVsRestClassifier
 #importa o LinearSVC utilizado no OVR
 from sklearn.svm import LinearSVC
 modeloOVR =  OneVsRestClassifier(LinearSVC(random_state=0)) 
 resultadoOVR = fit_and_predict("OneVsRest", modeloOVR, treino_X, treino_Y, teste_X, teste_Y)
+
+resultados[resultadoOVR] = modeloOVR
 #importa a biblioteca do modelo bayesiano
 from sklearn.naive_bayes import MultinomialNB
 modeloMultinomial = MultinomialNB()
 resultadoMultinomial = fit_and_predict("MultinomialNB", modeloMultinomial, treino_X, treino_Y, teste_X, teste_Y)
 #importa a biblioteca do Adaboost
+resultados[resultadoMultinomial] = modeloMultinomial
+
 from sklearn.ensemble import AdaBoostClassifier
 modeloAdaBoost = AdaBoostClassifier()
 resultadoAdaBoost = fit_and_predict("AdaBoostClassifier", modeloAdaBoost, treino_X, treino_Y, teste_X, teste_Y)
-
-if resultadoMultinomial > resultadoAdaBoost:
-	vencedor = modeloMultinomial
-else:
-	vencedor = modeloAdaBoost
+resultados[resultadoAdaBoost] = modeloAdaBoost
+maximo = max(resultados)
+vencedor = resultados[maximo]
+print "O vencedo foi o modelo: {0}".format(vencedor)
 
 resultado = vencedor.predict(validacao_X)
 taxa_de_acerto = 100.0 * vencedor.score(validacao_X, validacao_Y)
