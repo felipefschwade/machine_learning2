@@ -1,4 +1,4 @@
-
+#!-*- coding: utf-8 -*-
 from collections import Counter
 import pandas as pd #Utiliza a biblioteca pandas de Data Analysis
 df = pd.read_csv('situacao_do_cliente.csv') #Df = data_frame
