@@ -1,4 +1,8 @@
 #!-*- coding: utf-8 -*-
+#importa a biblioteca numerica do python
+import numpy as np
+#importa o contador
+from collections import Counter
 import pandas as pd
 #importa o metodo cross_val_score da biblioteca do cross_validation
 from sklearn.cross_validation import cross_val_score 
@@ -20,34 +24,62 @@ tradutor = {palavra:indice for palavra,indice in tuplas}
 #cria a função que transforma um texto em um vetor numerico
 def vetoriza_texto(texto, tradutor):
 	vetor = [0] * len(tradutor)
-	texto = textos_quebrados[0]
 	for palavra in texto:
 		if palavra in tradutor:
 			posicao = tradutor[palavra]
 			vetor[posicao] += 1
 	return vetor
-vetores_de_texto = [] * len(tradutor)
-for texto in textos_quebrados:
-	vetores_de_texto = vetoriza_texto(texto, tradutor)
-marcacoes = classificacoes['classificacao']
-X = vetores_de_texto
-Y = marcacoes
-print X
-print Y
+
+vetores_de_texto = [vetoriza_texto(texto, tradutor) for texto in textos_quebrados]
+X = np.array(vetores_de_texto)
+Y = np.array(classificacoes['classificacao'].tolist())
 tamanho_de_treino = int(0.8 * len(X)) #define que o treino do algoritmo sera de 80 dos dados
+
 treino_X = X[:tamanho_de_treino]
 treino_Y = Y[:tamanho_de_treino]
 validacao_X = X[tamanho_de_treino:]
 validacao_Y = Y[tamanho_de_treino:]
+
+
 def fit_and_predict(nome, modelo, treino_X, treino_Y):
-	k = 4
-	resultado = cross_val_score(modelo, treino_X, treino_Y, cv = k);
-	taxa_de_acerto = np.mean(resultado)
-	print "A taxa de acerto do {0} foi de {1}".format(nome, taxa_de_acerto)
-	return taxa_de_acerto
-#importa a bilbioteca do multiclass OneVsOne
-from sklearn.multiclass import OneVsOneClassifier
+ 	k = 10
+ 	resultado = cross_val_score(modelo, treino_X, treino_Y, cv = k);
+ 	taxa_de_acerto = np.mean(resultado)
+ 	print "A taxa de acerto do {0} foi de {1}".format(nome, taxa_de_acerto)
+ 	return taxa_de_acerto
+
+resultados = {}
+#importa a bilbioteca do multiclass OneVsRest
+from sklearn.multiclass import OneVsRestClassifier
 #importa o LinearSVC utilizado no OVR
 from sklearn.svm import LinearSVC
-modeloOVR =  OneVsOneClassifier(LinearSVC(random_state=0)) 
-fit_and_predict("OneVsOneClassifier", modeloOVR, treino_X, treino_Y)
+modeloOVR =  OneVsRestClassifier(LinearSVC(random_state=0)) 
+resultadoOVR = fit_and_predict("OneVsRest", modeloOVR, treino_X, treino_Y)
+resultados[resultadoOVR] = modeloOVR
+
+#importa a bilbioteca do multiclass OneVsOne
+from sklearn.multiclass import OneVsOneClassifier
+modeloOVO =  OneVsOneClassifier(LinearSVC(random_state=0)) 
+resultadoOVO = fit_and_predict("OneVsOne", modeloOVO, treino_X, treino_Y)
+resultados[resultadoOVO] = modeloOVO
+
+#importa a biblioteca do modelo bayesiano
+from sklearn.naive_bayes import MultinomialNB
+modeloMultinomial = MultinomialNB()
+resultadoMultinomial = fit_and_predict("MultinomialNB", modeloMultinomial, treino_X, treino_Y)
+#importa a biblioteca do Adaboost
+resultados[resultadoMultinomial] = modeloMultinomial
+
+from sklearn.ensemble import AdaBoostClassifier
+modeloAdaBoost = AdaBoostClassifier()
+resultadoAdaBoost = fit_and_predict("AdaBoostClassifier", modeloAdaBoost, treino_X, treino_Y)
+resultados[resultadoAdaBoost] = modeloAdaBoost
+maximo = max(resultados)
+vencedor = resultados[maximo]
+print "O vencedor foi o modelo: {0}".format(vencedor)
+
+vencedor.fit(treino_X, treino_Y)
+resultado = vencedor.score(validacao_X, validacao_Y) * 100.0
+msg = "Taxa de acerto do algoritmo vencedor no mundo real: {0}".format(resultado)
+print msg
+print "Quantidade de testes realizados: {0}".format(len(validacao_Y))
