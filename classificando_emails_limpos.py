@@ -33,9 +33,11 @@ tradutor = {palavra:indice for palavra,indice in tuplas}
 def vetoriza_texto(texto, tradutor):
 	vetor = [0] * len(tradutor)
 	for palavra in texto:
-		if len(palavra) > 0 and stemmer.stem(palavra) in tradutor:
-			posicao = tradutor[stemmer.stem(palavra)]
-			vetor[posicao] += 1
+		if len(palavra) > 0: 
+			raiz = stemmer.stem(palavra) 
+			if raiz in tradutor:
+				posicao = tradutor[stemmer.stem(palavra)]
+				vetor[posicao] += 1
 	return vetor
 
 vetores_de_texto = [vetoriza_texto(texto, tradutor) for texto in textos_quebrados]
