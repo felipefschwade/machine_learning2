@@ -11,17 +11,19 @@ stopwords = nltk.corpus.stopwords.words('portuguese')
 #cria um Stemmer utilizando o Removedor de Sufixos da Lingua Portuguesa para extrair a raiz das palavras
 #nltk.download('rslp')
 stemmer = nltk.stem.RSLPStemmer()
+#nltk.download('punkt') para utilizar o tokenize
 #importa o metodo cross_val_score da biblioteca do cross_validation
 from sklearn.cross_validation import cross_val_score 
 classificacoes = pd.read_csv("emails.csv", encoding = 'utf-8')
 textos_puros = classificacoes['email']
 #quebra os textos em um conjunto de palavras separadas
-textos_quebrados = textos_puros.str.lower().str.split(' ') 
+textos_minusculos = textos_puros.str.lower()
+textos_quebrados = [nltk.tokenize.word_tokenize(textos_minusculos) for textos_minusculos in textos_minusculos]
 #cria um conjunto que não aceida dados iguais
 dicionario = set()
 #cria uma lista com os textos quebrados que não estão nas stopwords e adiciona ao conjunto
 for lista in textos_quebrados:
-	validas = [stemmer.stem(palavra) for palavra in lista if palavra not in stopwords and len(palavra) > 0]
+	validas = [stemmer.stem(palavra) for palavra in lista if palavra not in stopwords and len(palavra) > 2]
 	dicionario.update(validas)
 #define a quantidade todal de palavras
 total_de_palavras = len(dicionario)
